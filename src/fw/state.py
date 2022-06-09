@@ -103,13 +103,13 @@ class State(ABC):
 
         Parameters
         ----------
-        operators : Iterable[Operator]
+        operators : Iterable of Operator
             Any iterable collection where there are contained operators to be
             filtered by it's possibility to be applied on this state.
 
         Returns
         -------
-        tuple[Operator]
+        tuple of Operator
             Tuple of all operators which can be applied to this current state.
         """
         return tuple(filter(lambda o: self.can_be_applied(o), operators))
@@ -171,14 +171,14 @@ class State(ABC):
 
         Parameters
         ----------
-        operators : Iterable[Operator]
+        operators : Iterable of Operator
             Iterable collection of operators to be applied. This collection
             is filtered for the applicable only ones. Each of the valid one
             produces one state.
 
         Returns
         -------
-        tuple[State]
+        tuple of State
             Tuple of states created while applying the given operator on this
             state.
         """
@@ -246,17 +246,54 @@ class Operator(ABC):
         """
 
     def __repr__(self):
-        """"""
+        """Instance representation by human-readable operator name."""
         return self.operator_name
 
 
 class DifferenceEvaluator(ABC):
-    """"""
+    """This abstract class defines the basic mutual protocol for all the
+    difference and distance evaluators between two states.
+
+    The most general functionality of these evaluators is
+
+        - ability to determine if the two states are equivalent
+
+        - ability to provide a numerical (float) quantification of the
+          distance (difference) between the two states.
+
+    --------------------------------------------------------------------
+
+    By difference is assumed to be mathematically the same as a general
+    distance definition:
+
+        There is function `d: S x S -> R`, where `s ∈ S`:
+
+        1) `∀ s1, s2 ∈ S, d(s1, s2) >= 0`
+        2) `∀ s1, s2 ∈ S, d(s1, s2) = d(s2, s1)
+        3) `∀ s1, s2 ∈ S, d(s1, s2) = 0  <=>  s1 = s2
+        4) `∀ s1, s2, s3 ∈ S, d(s1, s2) + d(s2, s3) >= d(s1, s3)
+    """
 
     def are_the_same(self, state1: "State", state2: "State") -> bool:
         """Method able to evaluate if the two given states are the same. The
         equality of the states is True if and only if the calculated difference
         between the two states is zero (0). Otherwise it returns False.
+
+        Parameters
+        ----------
+        state1 : State
+            First state to be considerate in distance-like relation with the
+            second one
+
+        state2 : State
+            Second state to be considerate in distance-like relation with the
+            first one
+
+        Returns
+        -------
+        bool
+            Boolean information about the equivalence of the two states. If
+            their mutual distance (difference) is zero, it returns True (3).
         """
         return self.evaluate_difference(state1, state2) == 0
 
@@ -267,29 +304,63 @@ class DifferenceEvaluator(ABC):
 
         The assumption is that the difference is always greater or equal to
         zero (0) and that when the difference is equal to zero (0), the two
-        given states are equal in means of this evaluator."""
+        given states are equal in means of this evaluator.
+
+        Parameters
+        ----------
+        state1 : State
+            First state to be considerate in distance-like relation with the
+            second one
+
+        state2 : State
+            Second state to be considerate in distance-like relation with the
+            first one
+
+        Returns
+        -------
+        float
+            Quantified difference between the two given states. When the
+            value is equal to zero, it means the two states are equivalent.
+            The result should never be negative (1).
+        """
 
 
 class OperatorApplicationError(Exception):
-    """"""
+    """Instances of this class represents the error while trying to apply
+    an operator not compatible with a given state to be applied on.
+
+    These errors usually prevents the inconsistent states."""
 
     # Private general message about not-availability of the application
     __MSG = "Operator cannot be applied"
 
     def __init__(self, operator: Operator, state: State, message: str = __MSG):
-        """"""
+        """Initor preparing the error instance to be risen.
+
+        Parameters
+        ----------
+        operator : Operator
+            Operator that cannot be applied on a state
+
+        state : State
+            State on which cannot the operator be applied
+
+        message : str, optional
+            Message to be passed as an description of the error.
+        """
         Exception.__init__(self, message)
+
         self._operator = operator
         self._state = state
 
     @property
     def operator(self) -> Operator:
-        """"""
+        """Operator that could not be applied on the state."""
         return self._operator
 
     @property
     def state(self) -> State:
-        """"""
+        """State on which the operator could not be applied."""
         return self._state
 
 
