@@ -13,10 +13,22 @@ class Algorithm(ABC):
 
     This non-instantiable parent has only access to the actual state space and
     the algorithm name. It also defines the abstract signature of the method
-    for solving the problem itself."""
+    for solving the problem itself.
+    """
 
     def __init__(self, algo_name: str, state_space: StateSpace):
-        """"""
+        """Initor of the class. It provides creation of the instance of
+        `Algorithm`, that can solve problems in state space.
+
+        Parameters
+        ----------
+        algo_name : str
+            Name of the algorithm
+
+        state_space : StateSpace
+            State space to be used as an abstraction of the problem to be
+            solved.
+        """
         self._algo_name = algo_name
         self._state_space = state_space
 
@@ -31,15 +43,50 @@ class Algorithm(ABC):
         return self._state_space
 
     @abstractmethod
-    def solve(self) -> State:
-        """"""
+    def solve(self):
+        """Abstract method `solve` responsible for performing the actual
+        algorithm run.
+
+        The algorithm can be terminated only two ways:
+
+            - by finding the solution
+            - by finding out there is no way to get to the solution
+
+        Raises
+        ------
+        SolutionSuccess
+            When the solution for the problem was successfully found
+
+        SolutionFailre
+            When the solution for the problem cannot be reached by this
+            algorithm
+        """
 
 
 class FringeBasedAlgorithm(Algorithm):
-    """"""
+    """This abstract class of algorithms defines the general protocol for
+    all the algorithms that are based on the two collections:
+
+        - fringe - collection of states meant to be searched in future
+
+        - closed - collection of states that are already closed (the search
+                   in them was performed) and are held just to prevent
+                   redundant repetition
+    """
 
     def __init__(self, algo_name: str, state_space: StateSpace):
-        """"""
+        """Initor of the class. It provides creation of the instance of
+        `Algorithm`, that can solve problems in state space.
+
+        Parameters
+        ----------
+        algo_name : str
+            Name of the algorithm
+
+        state_space : StateSpace
+            State space to be used as an abstraction of the problem to be
+            solved.
+        """
         Algorithm.__init__(self, algo_name, state_space)
         self._fringe: list[State] = [state_space.initial_state]
         self._closed: list[State] = []
@@ -89,30 +136,47 @@ class FringeBasedAlgorithm(Algorithm):
         return False
 
     def add_to_fringe(self, state: State):
-        """"""
+        """Adds the given state on the end of the fringe."""
         self._fringe.append(state)
 
     def add_to_closed(self, state: State):
-        """"""
+        """Adds the given state on the end of the fringe"""
         self._closed.append(state)
 
     def safe_add_to_fringe(self, state: State):
-        """"""
+        """Adds the given state on the end of the fringe; iff the state is not
+        there already."""
         if not self.is_in_fringe(state):
             self._fringe.append(state)
 
     def safe_add_to_closed(self, state: State):
-        """"""
+        """Adds the given state on the end of the closed; iff the state is not
+        there already."""
         if not self.is_in_closed(state):
             self._closed.append(state)
 
+    @property
     @abstractmethod
     def next_from_fringe(self) -> State:
-        """"""
+        """This abstract method defines the protocol of picking another state
+        to be searched by defining the mutual signature of the functionality.
+
+        Usual implementation of this method is returning another state from
+        fringe in one of these ways:
+
+            - first from the end (index `[-1]`)
+            - first from the start (index `[0]`)
+            - with (in a way) best 'value' (like the closest to the goal)
+            - by random
+        """
 
 
 class GoalBasedAlgorithm(Algorithm):
-    """"""
+    """This abstract class of algorithms provides ability to consider the
+    goal as an important part of information when solving the problem. Usually
+    is the goal state used to find out if the state is the final one or not
+    and if the algorithm achieved what it had to or not.
+    """
 
     def __init__(self, algo_name: str, state_space: GoalOrientedStateSpace):
         """Initor of the class. It provides creation of the instance of
