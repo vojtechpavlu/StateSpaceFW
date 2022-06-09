@@ -230,6 +230,13 @@ class AlgorithmTermination(Exception):
     """This exception is a mutual parent for the two ways of how the algorithm
     should end, which is by successfully finding the solution or finding out
     there is no suitable way to reach the solution.
+
+    Terminating the algorithm by exception provides ability to easily use
+    various language constructions in the algorithm itself (for example the
+    recursion) providing the best possible readability.
+
+    The only con for this way of letting the higher level to know about the
+    termination by using exceptions is the programmer has to catch it.
     """
 
     def __init__(self, message: str, algorithm: Algorithm):
@@ -252,36 +259,55 @@ class AlgorithmTermination(Exception):
         return self._algorithm
 
 
-class SolutionSuccess(Exception):
-    """"""
+class SolutionSuccess(AlgorithmTermination):
+    """This class defines instances of exceptions representing the successful
+    way of algorithm termination. These also provides the ability to contain
+    the final state - the solution."""
 
     def __init__(self, algorithm: Algorithm, final_state: State):
-        """"""
-        Exception.__init__(
-            self, f"{algorithm.algorithm_name}: Solution found")
-        self._algorithm = algorithm
+        """Initor of the successful termination exception.
+
+        Parameters
+        ----------
+        algorithm : Algorithm
+            Algorithm that just successfully ended
+
+        final_state : State
+            State that was found by the algorithm and considered as the
+            willed solution
+        """
+        AlgorithmTermination.__init__(
+            self, f"{algorithm.algorithm_name}: Solution found", algorithm)
         self._final_state = final_state
 
     @property
-    def algorithm(self) -> Algorithm:
-        return self._algorithm
-
-    @property
     def final_state(self) -> State:
+        """Returns the found solution."""
         return self._final_state
 
 
-class SolutionFailure(Exception):
-    """"""
+class SolutionFailure(AlgorithmTermination):
+    """This class defines instances of exceptions representing the unsuccessful
+    way of algorithm termination.
+
+    This way of termination usually means the algorithm got to situation where
+    it cannot bypass the obstacle it run into."""
 
     def __init__(self, message: str, algorithm: Algorithm):
-        """"""
-        Exception.__init__(self, f"{algorithm.algorithm_name}: {message}")
-        self._algorithm = algorithm
+        """Initor of unsuccessful termination exception.
 
-    @property
-    def algorithm(self) -> Algorithm:
-        return self._algorithm
+        Parameters
+        ----------
+        message : str
+            Message about the unsuccessful algorithm run. Usually describes
+            the reason why the algorithm cannot reach the solution or why it
+            cannot continue searching for it.
+
+        algorithm : Algorithm
+            Reference to the algorithm that just ended.
+        """
+        AlgorithmTermination.__init__(
+            self, f"{algorithm.algorithm_name}: {message}", algorithm)
 
 
 
