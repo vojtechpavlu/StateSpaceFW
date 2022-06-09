@@ -2,7 +2,6 @@
 
 from abc import ABC, abstractmethod
 from typing import Iterable
-from random import choice
 
 from .state import State
 from .state_space import StateSpace, GoalOrientedStateSpace
@@ -112,6 +111,57 @@ class FringeBasedAlgorithm(Algorithm):
         """"""
 
 
+class GoalBasedAlgorithm(Algorithm):
+    """"""
+
+    def __init__(self, algo_name: str, state_space: GoalOrientedStateSpace):
+        """Initor of the class. It provides creation of the instance of
+        `Algorithm`, that can solve problems in state space.
+
+        Parameters
+        ----------
+        algo_name : str
+            Name of the algorithm
+
+        state_space : GoalOrientedStateSpace
+            State space to be used as an abstraction of the problem to be
+            solved.
+        """
+        Algorithm.__init__(self, algo_name, state_space)
+
+    @property
+    def state_space(self) -> GoalOrientedStateSpace:
+        """Overrides the original `state_space` property by changing the
+        return value type to `GoalOrientedStateSpace`."""
+        # The state space of the correct type is set by initor
+        return super().state_space
+
+    @property
+    def goal_state(self) -> State:
+        """This property returns the goal state from the Goal-oriented state
+        space. It's just a short hand for cleaning the usage."""
+        return self.state_space.goal_state
+
+    def difference_from_goal(self, state: State) -> float:
+        """This method provides easier usage by delegating the evaluation
+        on the goal-oriented state space's difference evaluator.
+
+        Parameters
+        ----------
+        state : State
+            State for which should be the difference from the goal state
+            evaluated. When the result is zero (0), the two states are
+            considered as equal.
+
+        Returns
+        -------
+        float
+            The result of the evaluation; the quantified difference (distance)
+            between the given state and the goal one.
+        """
+        return self.state_space.difference_from_goal(state)
+
+
 class SolutionSuccess(Exception):
     """"""
 
@@ -143,37 +193,5 @@ class SolutionFailure(Exception):
     def algorithm(self) -> Algorithm:
         return self._algorithm
 
-
-class RandomOperatorPicker(Algorithm):
-
-    def __init__(self, state_space: GoalOrientedStateSpace):
-        Algorithm.__init__(self, "RandomOperatorPicker", state_space)
-
-    @property
-    def state_space(self) -> GoalOrientedStateSpace:
-        return super().state_space
-
-    def solve(self) -> State:
-
-        # All operators available
-        ops = self.state_space.operators
-
-        # Current state the space is in
-        current_state = self.state_space.initial_state
-
-        # While there is difference between the current state and the goal
-        while not self.state_space.difference_from_goal(current_state):
-
-            # Randomly pick available operator
-            applying = choice(current_state.filter_applicable(ops))
-
-            # Apply this operator to current state and save the result
-            current_state = current_state.apply(applying)
-
-            # Notify about the action
-            print(applying, "=>", current_state)
-
-        # If the difference is zero
-        return current_state
 
 
