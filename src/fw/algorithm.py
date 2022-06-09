@@ -226,6 +226,32 @@ class GoalBasedAlgorithm(Algorithm):
         return self.state_space.difference_from_goal(state)
 
 
+class AlgorithmTermination(Exception):
+    """This exception is a mutual parent for the two ways of how the algorithm
+    should end, which is by successfully finding the solution or finding out
+    there is no suitable way to reach the solution.
+    """
+
+    def __init__(self, message: str, algorithm: Algorithm):
+        """Initor of the termination exception.
+
+        Parameters
+        ----------
+        message : str
+            Message to describe the way of termination
+
+        algorithm : Algorithm
+            Algorithm that just ended
+        """
+        Exception.__init__(self, message)
+        self._algorithm = algorithm
+
+    @property
+    def algorithm(self) -> Algorithm:
+        """Algorithm that just ended."""
+        return self._algorithm
+
+
 class SolutionSuccess(Exception):
     """"""
 
