@@ -108,6 +108,18 @@ class FringeBasedAlgorithm(Algorithm):
         This property returns these states contained in a tuple collection."""
         return tuple(self._closed)
 
+    @property
+    def has_any_in_fringe(self) -> bool:
+        """Returns if the fringe has any state in it. If does, it return True,
+        else False."""
+        return len(self.fringe) > 0
+
+    @property
+    def has_any_in_closed(self) -> bool:
+        """Returns if the closed has any state in it. If does, it returns True,
+        else False."""
+        return len(self.closed) > 0
+
     def is_in_fringe(self, state: State) -> bool:
         """Method returning if the given state (or it's equivalent with zero
         difference) is already contained in the fringe."""
@@ -139,21 +151,43 @@ class FringeBasedAlgorithm(Algorithm):
         """Adds the given state on the end of the fringe."""
         self._fringe.append(state)
 
-    def add_to_closed(self, state: State):
-        """Adds the given state on the end of the fringe"""
-        self._closed.append(state)
-
     def safe_add_to_fringe(self, state: State):
         """Adds the given state on the end of the fringe; iff the state is not
         there already."""
         if not self.is_in_fringe(state):
             self._fringe.append(state)
 
+    def add_all_to_fringe(self, states: Iterable[State]):
+        """Adds all the given states to the fringe, no matter if their
+        equivalents are there already."""
+        self._fringe.extend(states)
+
+    def safe_add_all_to_fringe(self, states: Iterable[State]):
+        """Adds all the given states to fringe safely. It means the states
+        are checked if their equivalents are not there already."""
+        for state in states:
+            self.safe_add_to_fringe(state)
+
+    def add_to_closed(self, state: State):
+        """Adds the given state on the end of the fringe"""
+        self._closed.append(state)
+
     def safe_add_to_closed(self, state: State):
         """Adds the given state on the end of the closed; iff the state is not
         there already."""
         if not self.is_in_closed(state):
             self._closed.append(state)
+
+    def add_all_to_closed(self, states: Iterable[State]):
+        """Adds all the given states to the closed, no matter if their
+        equivalents are there already."""
+        self._closed.extend(states)
+
+    def safe_add_all_to_closed(self, states: Iterable[State]):
+        """Adds all the given states to closed safely. It means the states
+        are checked if their equivalents are not there already."""
+        for state in states:
+            self.safe_add_to_closed(state)
 
     @property
     @abstractmethod
