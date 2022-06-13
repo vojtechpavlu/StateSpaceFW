@@ -80,6 +80,8 @@ class State(ABC):
     def operators_sequence(self) -> "tuple[Operator]":
         """Returns all the applied operators from the initial state to this
         one. These operators are formed in a tuple."""
+
+        # Set current state as the default one
         current_state = self
         operators = []
 
@@ -94,6 +96,30 @@ class State(ABC):
 
         # Return the reversed list of operators in tuple
         return tuple(reversed(operators))
+
+    @property
+    def parents_sequence(self) -> "tuple[State]":
+        """This property returns the tuple of all the ancestors in order, from
+        initial to this state instance.
+
+        This state is returned in the tuple too; at the last position (with
+        index of [-1]).
+        """
+        # Current state set as a first one
+        current_state = self
+        ancestors = [self]
+
+        # While the current state has a parent
+        while current_state.parent_state:
+
+            # Set it's parent as a new current state
+            current_state = current_state.parent_state
+
+            # Add current state to the list of ancestors
+            ancestors.append(current_state)
+
+        # Return the reversed list of ancestors as a tuple
+        return tuple(reversed(ancestors))
 
     def filter_applicable(
             self, operators: "Iterable[Operator]") -> "tuple[Operator]":
