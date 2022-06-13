@@ -285,12 +285,19 @@ class AlgorithmTermination(Exception):
             Algorithm that just ended
         """
         Exception.__init__(self, message)
+        self._message = message
         self._algorithm = algorithm
+
+    @property
+    def message(self) -> str:
+        """Description of algorithm termination."""
+        return self._message
 
     @property
     def algorithm(self) -> Algorithm:
         """Algorithm that just ended."""
         return self._algorithm
+
 
 
 class SolutionSuccess(AlgorithmTermination):
