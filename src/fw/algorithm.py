@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from typing import Iterable
+from time import time
 
 from .state import State
 from .state_space import StateSpace, GoalOrientedStateSpace
@@ -32,6 +33,12 @@ class Algorithm(ABC):
         self._algo_name = algo_name
         self._state_space = state_space
 
+        # When the timer started
+        self.__timer_start = 1
+
+        # When the timer stopped
+        self.__timer_stop = 0
+
     @property
     def algorithm_name(self) -> str:
         """Specified name of the algorithm."""
@@ -41,6 +48,44 @@ class Algorithm(ABC):
     def state_space(self) -> StateSpace:
         """State space in which the solution has to be found."""
         return self._state_space
+
+    @property
+    def ran_for(self) -> float:
+        """Algorithm measures it's period of time it ran. This value is in
+        seconds. If it's equal to -1, it means the algorithm haven't been
+        used yet."""
+        return self.__timer_stop - self.__timer_start
+
+    @property
+    def started_at(self):
+        return self.__timer_start
+
+    @property
+    def ended_at(self):
+        return self.__timer_stop
+
+    def start_timer(self):
+        """Starts the clock. When the method is called, the function
+        saves the current time - when the algorithm started.
+
+        It should be called when the algorithm really starts it's task only."""
+        self.__timer_start = time()
+
+    def stop_timer(self):
+        """Stops the clock. When the method is called, the function saves the
+        current time - when the algorithm stopped.
+
+        It should be called when the algorithm really ends it's task only."""
+        self.__timer_stop = time()
+
+    def __call__(self, *args, **kwargs):
+        """"""
+        self.start_timer()
+        try:
+            self.solve()
+        except Exception as e:
+            self.stop_timer()
+            raise e
 
     @abstractmethod
     def solve(self):
@@ -90,6 +135,7 @@ class FringeBasedAlgorithm(Algorithm):
         Algorithm.__init__(self, algo_name, state_space)
         self._fringe: list[State] = [state_space.initial_state]
         self._closed: list[State] = []
+        self._number_of_seen: int = 1
 
     @property
     def fringe(self) -> tuple[State]:
@@ -107,6 +153,13 @@ class FringeBasedAlgorithm(Algorithm):
 
         This property returns these states contained in a tuple collection."""
         return tuple(self._closed)
+
+    @property
+    def number_of_seen(self) -> int:
+        """Returns the number of 'seen' states. It means the states added to
+        the fringe during the run of the algorithm. These states were not
+        opened during the execution."""
+        return self._number_of_seen
 
     @property
     def has_any_in_fringe(self) -> bool:
@@ -150,23 +203,26 @@ class FringeBasedAlgorithm(Algorithm):
     def add_to_fringe(self, state: State):
         """Adds the given state on the end of the fringe."""
         self._fringe.append(state)
+        self._number_of_seen += 1
 
     def safe_add_to_fringe(self, state: State):
         """Adds the given state on the end of the fringe; iff the state is not
         there already."""
         if not self.is_in_fringe(state):
-            self._fringe.append(state)
+            self.add_to_fringe(state)
 
     def add_all_to_fringe(self, states: Iterable[State]):
         """Adds all the given states to the fringe, no matter if their
         equivalents are there already."""
         self._fringe.extend(states)
+        self._number_of_seen += len(tuple(states))
 
     def safe_add_all_to_fringe(self, states: Iterable[State]):
         """Adds all the given states to fringe safely. It means the states
         are checked if their equivalents are not there already."""
-        for state in states:
-            self.safe_add_to_fringe(state)
+        to_be_added = tuple(filter(lambda s: not self.is_in_fringe(s), states))
+        self.add_all_to_fringe(to_be_added)
+        self._number_of_seen += len(to_be_added)
 
     def add_to_closed(self, state: State):
         """Adds the given state on the end of the fringe"""
