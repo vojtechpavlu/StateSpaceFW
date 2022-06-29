@@ -295,9 +295,9 @@ class DifferenceEvaluator(ABC):
         There is function `d: S x S -> R`, where `s ∈ S`:
 
         1) `∀ s1, s2 ∈ S, d(s1, s2) >= 0`
-        2) `∀ s1, s2 ∈ S, d(s1, s2) = d(s2, s1)
-        3) `∀ s1, s2 ∈ S, d(s1, s2) = 0  <=>  s1 = s2
-        4) `∀ s1, s2, s3 ∈ S, d(s1, s2) + d(s2, s3) >= d(s1, s3)
+        2) `∀ s1, s2 ∈ S, d(s1, s2) = d(s2, s1)`
+        3) `∀ s1, s2 ∈ S, d(s1, s2) = 0  <=>  s1 = s2`
+        4) `∀ s1, s2, s3 ∈ S, d(s1, s2) + d(s2, s3) >= d(s1, s3)`
     """
 
     def are_the_same(self, state1: "State", state2: "State") -> bool:
