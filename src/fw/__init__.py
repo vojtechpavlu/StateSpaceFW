@@ -2,11 +2,11 @@
 protocols of the states, state spaces and algorithms."""
 
 # Package-initor shorthand import index
-from algorithm import (
+from .algorithm import (
     Algorithm, FringeBasedAlgorithm, GoalBasedAlgorithm, AlgorithmTermination,
     SolutionSuccess, SolutionFailure)
 
-from state import State, Operator, DifferenceEvaluator
+from .state import State, Operator, DifferenceEvaluator
 
-from state_space import StateSpace, GoalOrientedStateSpace, StateSpaceShuffle
+from .state_space import StateSpace, GoalOrientedStateSpace, StateSpaceShuffle
 
