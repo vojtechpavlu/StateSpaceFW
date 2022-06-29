@@ -166,6 +166,10 @@ class StateSpaceShuffle:
         self._diff_evaluator = diff_evaluator
         self._shuffle_grade = shuffle_grade
 
+        """List of applied operators. This list is empty in the beginning, it's
+        filled after first performed shuffle."""
+        self._applied_operators: list[Operator] = []
+
         # Shuffle grade check
         if self._shuffle_grade < 0:
             raise Exception(
@@ -193,24 +197,37 @@ class StateSpaceShuffle:
         """Evaluator used to measure the difference between two states."""
         return self._diff_evaluator
 
-    def shuffle(self) -> StateSpace:
+    @property
+    def applied_operators(self) -> tuple[Operator]:
+        """Property returns a tuple of applied operators during the shuffle.
+        This sequence represents the sequence of the application, in order."""
+        return tuple(self._applied_operators)
+
+    def shuffle(self) -> GoalOrientedStateSpace:
         """The procedure of randomizing the state space initial state.
         This method sets the goal state as the initial, applies random
         operators on the state (and it's descendants) by the given times
         and builds the initial state from the goal.
         """
+        # Purifying the already applied operators (usually it' empty)
+        self._applied_operators.clear()
+
         # The current state space the randomization starts from is the goal
         current_state = self.goal_state
 
-        # Randomize in number of iterations
+        # Randomize the goal state in number of iterations
         for _ in range(self.shuffle_grade):
 
             # Selection of the applicable operators only
             applicable_ops = current_state.filter_applicable(self.operators)
 
-            # Applying one randomly picked on the current state to produce
-            # another one, which is set to be the current one
-            current_state = current_state.apply(choice(applicable_ops))
+            """Random pick of any of the applicable operators. This operator
+            is stored at the instance level as the one of the applied ops.
+            This operator is then applied on the current state, producing the
+            new current state, that is altered again in the next iteration."""
+            random_operator = choice(applicable_ops)
+            self._applied_operators.append(random_operator)
+            current_state = current_state.apply(random_operator)
 
         # Clear the future initial state from previous paths
         current_state.parent_state = None
